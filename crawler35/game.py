@@ -13,6 +13,11 @@ from crawler35.phb2.races import phb2_races  # Import PHB2 races
 from crawler35.phb1.items import core_items
 from crawler35.phb1.monsters import core_monsters
 from crawler35.phb1.spells import core_spells
+from crawler35.adventures.goblin_cave import goblin_cave_adventure
+from crawler35.adventures.haunted_forest import haunted_forest_adventure
+from crawler35.adventures.dragons_lair import dragons_lair_adventure
+from crawler35.adventures.sunless_citadel import sunless_citadel_adventure
+from crawler35.combat import combat  # Import the combat function
 
 def display_intro():
     print("===================================")
@@ -53,13 +58,20 @@ def allocate_ability_points():
     print("Each ability starts at 8. You can spend points to increase the score.")
     print("Max score is 18. Costs: 9-14 (1 point each), 15-16 (2 points each), 17-18 (3 points each).")
     print("Use abbreviations: STR, DEX, CON, INT, WIS, CHA.")
+    print("Enter 'god' to enable god mode with max stats (18 in all abilities).")
     
     while points > 0:
+        os.system('cls' if os.name == 'nt' else 'clear')  # Clear the terminal
         print(f"\nRemaining points: {points}")
         for ability, score in abilities.items():
             print(f"{ability}: {score}")
         
         choice = input("\nEnter the ability you want to increase: ").lower()
+        if choice == "god":
+            for ability in abilities:
+                abilities[ability] = 18
+            print("\nGod mode enabled. All abilities set to 18.")
+            break
         if choice in ability_abbr:
             choice = ability_abbr[choice]
         
@@ -93,7 +105,8 @@ def display_character_stats(character):
     print(f"AC: {character.get('armor_class', 'Unknown')}")
     print(f"EXP: {character['exp']}")
     print(f"Level: {character['level']}")
-    print(f"Abilities: {', '.join(character['abilities'].keys())}")
+    print(f"Abilities: {', '.join(f'{k}: {v}' for k, v in character['abilities'].items())}")
+    print(f"Languages: {', '.join(character['languages'])}")
     print("\n===== Equipment =====")
     print(f"Weapon: {character['equipment'].get('weapon', 'None')}")
     print(f"Armor: {character['equipment'].get('armor', 'None')}")
@@ -169,7 +182,7 @@ def combat(monster, character):
     print("\nCombat ended.")
 
 def select_race():
-    races = [human, elf, dwarf] + phb2_races  # Add more races as needed
+    races = [human, elf, dwarf, halfling, gnome, half_elf, half_orc, orc, drow]  
     print("Select a race:")
     for i, race in enumerate(races):
         print(f"{i + 1}. {race.name}")
@@ -249,67 +262,14 @@ def check_level_up(character):
         character['level'] += 1
         print(f"\nCongratulations! {character['name']} has reached level {character['level']}!")
 
-# Commented out saving functionality
-# def save_character(character, filename="character.json"):
-#     character['race'] = {
-#         'name': character['race'].name,
-#         'traits': character['race'].traits,
-#         'languages': character['race'].languages
-#     }
-#     character['class'] = {
-#         'name': character['class'].name,
-#         'hit_die': character['class'].hit_die,
-#         'primary_stat': getattr(character['class'], 'primary_stat', None),
-#         'saving_throws': getattr(character['class'], 'saving_throws', None),
-#         'armor_proficiencies': getattr(character['class'], 'armor_proficiencies', None),
-#         'weapon_proficiencies': getattr(character['class'], 'weapon_proficiencies', None),
-#         'tool_proficiencies': getattr(character['class'], 'tool_proficiencies', None),
-#         'skills': getattr(character['class'], 'skills', None)
-#     }
-#     with open(filename, 'w') as f:
-#         json.dump(character, f)
-#     print("\nCharacter saved successfully.")
-
-# def load_character(filename="character.json"):
-#     if os.path.exists(filename):
-#         try:
-#             with open(filename, 'r') as f:
-#                 character = json.load(f)
-#             # Convert dictionaries back to Race and Class objects
-#             character['race'] = Race(
-#                 name=character['race']['name'],
-#                 traits=character['race']['traits'],
-#                 languages=character['race']['languages']
-#             )
-#             character['class'] = Class(
-#                 name=character['class']['name'],
-#                 hit_die=character['class']['hit_die'],
-#                 primary_stat=character['class'].get('primary_stat', None),
-#                 class_skills=character['class'].get('class_skills', None),
-#                 class_abilities=character['class'].get('class_abilities', None),
-#                 ability_modifiers=character['class'].get('ability_modifiers', None),
-#                 saving_throws=character['class'].get('saving_throws', None),
-#                 armor_proficiencies=character['class'].get('armor_proficiencies', None),
-#                 weapon_proficiencies=character['class'].get('weapon_proficiencies', None),
-#                 tool_proficiencies=character['class'].get('tool_proficiencies', None),
-#                 skills=character['class'].get('skills', None)
-#             )
-#             # Ensure HP and armor_class are loaded
-#             character['hp'] = character.get('hp', 10)  # Default HP to 10 if missing
-#             character['armor_class'] = character.get('armor_class', 10)  # Default AC to 10 if missing
-#             print("\nCharacter loaded successfully.")
-#             return character
-#         except json.JSONDecodeError:
-#             print("\nError loading character. Starting a new game.")
-#             return None
-#     else:
-#         print("\nNo saved character found.")
-#         return None
-
 def create_character():
     selected_race = select_race()
     selected_class = select_class()
     abilities = allocate_ability_points()
+
+    # Apply racial ability modifiers
+    for ability, modifier in selected_race.ability_modifiers.items():
+        abilities[ability] += modifier
 
     # Provide a default starter kit if not set in the class
     starter_kit = selected_class.starter_kit or {
@@ -327,64 +287,138 @@ def create_character():
         'exp': 0,
         'abilities': abilities,
         'traits': selected_race.traits,
+        'languages': selected_race.languages,
         'gold': selected_class.roll_starting_gold(),
         'starter_kit': starter_kit,  # Use the starter kit from class or default
         'hp': 20,  # Default HP, modify based on class and level
         'armor_class': 10,  # Default AC, modify based on class and equipment
+        'location_safety': 'safe',  # Default safety level
         'equipment': {
             'weapon': "Longsword",  # Example starting weapon
             'armor': "Chainmail",  # Example starting armor
-            'potions': 3  # Example starting potions
-        }
+            'potions': 3,  # Example starting potions
+        },
+        'items': [],  # Initialize items list
+        'location': 'Town' #starting location
     }
 
     display_character_summary(character)
     return character
 
+def save_character(character):
+    """Saves the character to a JSON file."""
+    character_copy = character.copy()
+    character_copy['race'] = character['race'].name  # Convert Race object to its name
+    character_copy['class'] = character['class'].name  # Convert Class object to its name
+    with open('character.json', 'w') as file:
+        json.dump(character_copy, file, indent=4)
+    print("Character saved.")
+
+def rest(character, safety_level='safe'):
+    """Rest function to heal the character and reset spell slots."""
+    print("\nYou take a rest, recovering your strength and abilities.")
+    
+    encounter_chance = 0
+    if safety_level == 'unsafe':
+        encounter_chance = 0.2
+    elif safety_level == 'traps':
+        encounter_chance = 0.05  # 5% chance of encounter
+    elif safety_level == 'shifts':
+        encounter_chance = 0.1  # 10% chance of encounter
+    
+    if random.random() < encounter_chance:
+        print("You are ambushed during your rest!")
+        # Trigger a random encounter
+        monster = random.choice(core_monsters)
+        combat(monster, character)
+    else:
+        character['hp'] = 20  # Reset HP to full (assuming max HP is 20, adjust as needed)
+        # character['spell_slots'] = character['class'].max_spell_slots  # Uncomment when spell slots are implemented
+        print("Your HP has been restored.")
+        # print("Your spell slots have been reset.")
+    
+    save_character(character)  # Save character after resting
+
+def main_menu(character):
+    while True:
+        print("\n===== Main Menu =====")
+        print("1. View Character Stats")
+        print("2. Select Adventure")
+        print("3. Rest")
+        print("4. Save and Exit")
+        choice = input("Choose an option: ")
+
+        if choice == "1":
+            display_character_stats(character)
+        elif choice == "2":
+            selected_adventure = select_adventure()
+            run_adventure(selected_adventure, character)
+        elif choice == "3":
+            rest(character)
+        elif choice == "4":
+            save_character(character)  # Save character before exiting
+            print("Game saved. Exiting...")
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
 def run_adventure(adventure, character):
+    character['location_safety'] = 'unsafe'  # Set safety level to unsafe for all adventures
+
     if adventure == "The Goblin Cave":
-        print("\nYou enter the dark and damp Goblin Cave.")
-        goblin = core_monsters[0]
-        combat(goblin, character)
-        print("You find some gold and a mysterious artifact.")
-        character['exp'] += 100
+        goblin_cave_adventure(character, combat, rest)
     elif adventure == "The Haunted Forest":
-        print("\nYou step into the eerie Haunted Forest.")
-        ghost = core_monsters[1]
-        combat(ghost, character)
-        print("You find an ancient scroll and some rare herbs.")
-        character['exp'] += 150
+        haunted_forest_adventure(character, combat, rest)
     elif adventure == "The Dragon's Lair":
-        print("\nYou bravely enter the Dragon's Lair.")
-        dragon = core_monsters[2]
-        combat(dragon, character)
-        print("You find a hoard of treasure and a powerful weapon.")
-        character['exp'] += 300
+        dragons_lair_adventure(character, combat, rest)
     elif adventure == "The Sunless Citadel":
-        print("\nYou descend into the Sunless Citadel.")
-        kobold = core_monsters[3]
-        combat(kobold, character)
-        print("You find a hidden stash of potions and a magical ring.")
-        character['exp'] += 200
+        sunless_citadel_adventure(character, combat, rest)
     else:
         print("\nUnknown adventure. Please select a valid adventure.")
+    
+    # Add rest/camp option
+    while True:
+        print("\n===== Adventure Menu =====")
+        print("1. Continue Adventure")
+        print("2. Rest/Camp")
+        print("3. Return to Main Menu")
+        choice = input("Choose an option: ")
+
+        if choice == "1":
+            break  # Continue the adventure
+        elif choice == "2":
+            rest(character)
+        elif choice == "3":
+            main_menu(character)
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+
+def load_character():
+    """Loads the character from a JSON file if it exists."""
+    if os.path.exists('character.json'):
+        with open('character.json', 'r') as file:
+            character = json.load(file)
+            # Convert race and class names back to objects if necessary
+            character['race'] = next(race for race in [human, elf, dwarf, halfling, gnome, half_elf, half_orc, orc, drow] if race.name == character['race'])
+            character['class'] = next(cls for cls in core_classes if cls.name == character['class'])
+            return character
+    return None
 
 def main():
     display_intro()
     
     # Load or create character
-    # character = load_character()  # Disabled loading for now
-    character = create_character()  # Always create a new character during testing
+    character = load_character()
+    if not character:
+        character = create_character()
     
-    # Select an adventure
-    selected_adventure = select_adventure()
-    print(f"\nYour adventure '{selected_adventure}' will scale to your character level.")
-    
-    # Run the selected adventure
-    run_adventure(selected_adventure, character)
+    # Display the main menu
+    main_menu(character)
     
     # Save character after adventure (disabled for testing)
-    # save_character(character)
+    save_character(character)
 
 if __name__ == "__main__":
     main()
