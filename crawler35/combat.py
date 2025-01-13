@@ -99,16 +99,16 @@ def combat(monster, character):
 
             # Check if player is defeated
             if character['hp'] <= 0:
+                character['hp'] = character['max_hp']  # Reset health to the character's max HP
                 print(f"\nYou were defeated by the {monster.name}!")
                 wave_obj = sa.WaveObject.from_wave_file('path/to/defeat_sound.wav')  # Load defeat sound
                 play_obj = wave_obj.play()  # Play defeat sound
                 play_obj.wait_done()  # Wait for sound to finish playing
-                time.sleep(100)  # Wait for 5 seconds
+                time.sleep(500)  # Wait for 5 seconds
                 from crawler35.game import main_menu  # Import the main_menu function here
                 main_menu(character)  # Return to the main menu if the player dies
                 return  # End combat if player dies
 
         # Add a delay between turns
-        time.sleep(1)
-
+        time.sleep(100)
     print("\nCombat ended.")

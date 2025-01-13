@@ -38,15 +38,15 @@ def generate_goblin_boss_name(character):
 
 def goblin_cave_adventure(character, combat, rest):
     print("\nYou begin your journey to the Goblin Cave.")
-    time.sleep(1)
+    time.sleep(3)
     print("The road is long and winding, with dense forests on either side.")
-    time.sleep(1)
+    time.sleep(3)
     
     # Chance of encounter on the road
     encounter_chance = random.random()
     if encounter_chance < 0.3:  # 30% chance of encounter
         print("Suddenly, you hear rustling in the bushes...")
-        time.sleep(1)
+        time.sleep(3)
         print("A wild creature jumps out and attacks you!")
         wild_creature = Monster(
             name="Wild Creature",
@@ -63,21 +63,21 @@ def goblin_cave_adventure(character, combat, rest):
         print("You manage to defeat the creature and continue your journey.")
     elif encounter_chance < 0.5:  # 20% chance of meeting a wandering merchant
         print("You encounter a wandering merchant on the road.")
-        time.sleep(1)
+        time.sleep(3)
         print("The merchant greets you warmly and offers to trade goods.")
         if character['race'].name == "Elf":
             print("The merchant recognizes you as an elf and offers you a gift.")
             extra_gold = random.randint(1, 50)
             extra_potions = random.randint(1, 3)
             character['gold'] += extra_gold
-            character['potions'].append(f"{extra_potions} Potions")
+            character['equipment']['potions'] += extra_potions  # Correctly update the number of potions
             print(f"The merchant gives you {extra_gold} gold and {extra_potions} potions.")
         else:
             print("You have a pleasant conversation with the merchant and continue your journey.")
     else:
         print("The journey is uneventful, and you make good progress.")
     
-    time.sleep(1)
+    time.sleep(3)
     print("As the sun sets, you decide to set up camp for the night.")
     
     # Night of camping
@@ -101,7 +101,7 @@ def goblin_cave_adventure(character, combat, rest):
             print("Invalid choice. Please try again.")
     
     print("You wake up the next morning, feeling refreshed, and continue your journey to the Goblin Cave.")
-    time.sleep(1)
+    time.sleep(3)
     print("\nYou enter the dark and damp Goblin Cave.")
     
     if character['race'].name == "Orc":
@@ -115,13 +115,16 @@ def goblin_cave_adventure(character, combat, rest):
             if character['hp'] <= 0:
                 print("You have been defeated by the goblins.")
                 return
+            time.sleep(3)  # Add sleep to slow down the storyline
 
     print("You reach the inner chamber of the cave.")
+    time.sleep(3)  # Add sleep to slow down the storyline
     boss_name = generate_goblin_boss_name(character)
     if "Orcish" in character.get('languages', []):
         print(f"A fearsome Orc boss named {boss_name} appears and commands the goblins to attack you!")
     else:
         print(f"A fearsome Orc boss named {boss_name} (in gibberish) appears and commands the goblins to attack you!")
+    time.sleep(3)  # Add sleep to slow down the storyline
 
     if character['race'].name != "Orc":
         goblin_boss.hit_points = goblin_boss.max_hit_points  # Reset goblin boss's health
@@ -130,9 +133,12 @@ def goblin_cave_adventure(character, combat, rest):
         if character['hp'] <= 0:
             print(f"You have been defeated by {boss_name}.")
             return
+        time.sleep(3)  # Add sleep to slow down the storyline
 
     print(f"You have defeated {boss_name} and cleared the Goblin Cave!")
+    time.sleep(3)  # Add sleep to slow down the storyline
     print("You find some gold and a mysterious artifact.")
     character['exp'] += 100
     character['gold'] += random.randint(50, 100)
     character['items'].append("Mysterious Artifact")
+    time.sleep(3)  # Add sleep to slow down the storyline

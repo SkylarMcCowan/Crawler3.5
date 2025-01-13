@@ -1,9 +1,9 @@
 {
-    "name": "god",
+    "name": "bourdain",
     "race": "Elf",
-    "class": "Rogue",
-    "level": 2,
-    "exp": 675,
+    "class": "Fighter",
+    "level": 1,
+    "exp": 400,
     "abilities": {
         "Strength": 18,
         "Dexterity": 20,
@@ -23,20 +23,16 @@
         "Common",
         "Elvish"
     ],
-    "gold": 476,
+    "gold": 264,
     "starter_kit": {
         "weapon": [
-            "Dagger",
-            "Shortsword"
+            "Longsword"
         ],
         "armor": [
-            "Leather Armor"
+            "Chainmail"
         ],
-        "tools": [
-            "Thieves' Tools"
-        ],
+        "tools": null,
         "items": [
-            "Rope",
             "Adventurer's Pack"
         ]
     },
@@ -46,15 +42,11 @@
     "equipment": {
         "weapon": "Longsword",
         "armor": "Chainmail",
-        "potions": 3
+        "potions": 4
     },
     "items": [
         "Mysterious Artifact",
-        "1 Potions",
         "Mysterious Artifact",
-        "Mysterious Artifact",
-        "Mysterious Artifact",
-        "3 Potions",
         "Mysterious Artifact"
     ],
     "location": "Town"

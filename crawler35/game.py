@@ -101,6 +101,7 @@ def display_character_stats(character):
     """Displays the current character's stats during combat, including equipment and potions."""
     print("\n===== Character Stats =====")
     print(f"Name: {character['name']}")
+    print(f"Race: {character['race'].name}")
     print(f"HP: {character.get('hp', 'Unknown')}")
     print(f"AC: {character.get('armor_class', 'Unknown')}")
     print(f"EXP: {character['exp']}")
@@ -290,8 +291,11 @@ def create_character():
         'languages': selected_race.languages,
         'gold': selected_class.roll_starting_gold(),
         'starter_kit': starter_kit,  # Use the starter kit from class or default
-        'hp': 20,  # Default HP, modify based on class and level
+        'hp': selected_race.hit_die + abilities['Constitution'],  # Roll hit die and add Con modifier
+        'hp': selected_race.hit_die + (abilities['Constitution'] - 10) // 2,  # Max HP at level 1
+        'max_hp': (selected_race.hit_die*character.level) + (abilities['Constitution'] - 10) // 2,  # Store max HP for reference
         'armor_class': 10,  # Default AC, modify based on class and equipment
+        'temp_hp': 0,  # Temporary HP, starts at 0
         'location_safety': 'safe',  # Default safety level
         'equipment': {
             'weapon': "Longsword",  # Example starting weapon
@@ -332,7 +336,7 @@ def rest(character, safety_level='safe'):
         monster = random.choice(core_monsters)
         combat(monster, character)
     else:
-        character['hp'] = 20  # Reset HP to full (assuming max HP is 20, adjust as needed)
+        character['hp'] = character['max_hp']  # Reset HP to max HP
         # character['spell_slots'] = character['class'].max_spell_slots  # Uncomment when spell slots are implemented
         print("Your HP has been restored.")
         # print("Your spell slots have been reset.")
